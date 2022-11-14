@@ -18,7 +18,7 @@ $nonexistent = @()
  
 foreach ($value in $path) {
     if ($normal -notcontains $value.TrimEnd('\')) {
-        if (Test-Path $value) {
+        if ((Test-Path $value) -and (Test-Path "$value\*")) {
             $normal += $value.TrimEnd('\')
         }
         else {
@@ -44,7 +44,7 @@ if ($duplicates) {
 }
 if ($nonexistent) {
     [array]::sort($nonexistent)
-    Write-Host "`e[33m:: Removed entries with wrong path:`e[0m"
+    Write-Host "`e[33m:: Removed entries with nonexistent path:`e[0m"
     foreach ($value in $nonexistent) {
         Write-Host "`e[33m-`e[0m $value"
     }
