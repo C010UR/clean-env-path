@@ -6,7 +6,8 @@ $env_target = [System.EnvironmentVariableTarget]::User
 
 if ($target -eq 'machine') {
     $env_target = [System.EnvironmentVariableTarget]::Machine
-} elseif ($target -eq 'process') {
+}
+elseif ($target -eq 'process') {
     $env_target = [System.EnvironmentVariableTarget]::Process
 }
 
@@ -15,43 +16,38 @@ $normal = @()
 $duplicates = @()
 $nonexistent = @()
  
-foreach ($value in $path)
-{
-    if ($normal -notcontains $value)
-    {
+foreach ($value in $path) {
+    if ($normal -notcontains $value.TrimEnd('\')) {
         if (Test-Path $value) {
-            $normal += $value
-        } else {
+            $normal += $value.TrimEnd('\')
+        }
+        else {
             $nonexistent += $value
         }
     }
-    else
-    {
+    else {
         $duplicates += $value
     }
 }
- 
-if ($duplicates -Or $nonexistent)
-{
-    [array]::sort($normal)
+
+[array]::sort($normal)
+Write-Host "`e[32m:: PATH entries:`e[0m"
+foreach ($value in $normal) {
+    Write-Host "`e[32m+`e[0m $value"
+}
+if ($duplicates) {
     [array]::sort($duplicates)
-    [array]::sort($nonexistent)
-    Write-Host "`e[32m:: New PATH entries:`e[0m"
-    foreach ($value in $normal) {
-        Write-Host "`e[32m+ $value`e[0m"
-    }
     Write-Host "`e[31m:: Removed duplicates:`e[0m"
     foreach ($value in $duplicates) {
-        Write-Host "`e[31m- $value`e[0m"
+        Write-Host "`e[31m-`e[0m $value"
     }
+}
+if ($nonexistent) {
+    [array]::sort($nonexistent)
     Write-Host "`e[33m:: Removed entries with wrong path:`e[0m"
     foreach ($value in $nonexistent) {
-        Write-Host "`e[33m- $value`e[0m"
+        Write-Host "`e[33m-`e[0m $value"
     }
+}
 
-    [Environment]::SetEnvironmentVariable("Path", $normal -join ';', $env_target)
-}
-else
-{
-    Write-Host "`e[32mNo Duplicate PATH entries found. The PATH will remain the same.`e[0m"
-}
+[Environment]::SetEnvironmentVariable("Path", $normal -join ';', $env_target)
